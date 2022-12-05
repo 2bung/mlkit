@@ -4,8 +4,8 @@
     package="com.google.mlkit.samples.codescanner"
     tools:overrideLibrary="com.google.android.gms.base">
 
-  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-  <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
 
   <application
       android:icon="@drawable/logo_mlkit"
@@ -29,11 +29,6 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
-
-    <activity
-        android:name=".java.MainActivity"
-        android:exported="false" />
-
     <activity
         android:name=".kotlin.MainActivity"
         android:exported="false" />

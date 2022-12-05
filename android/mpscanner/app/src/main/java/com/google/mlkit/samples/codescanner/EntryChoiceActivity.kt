@@ -26,13 +26,8 @@ class EntryChoiceActivity : BaseEntryChoiceActivity() {
   override fun getChoices(): List<Choice> {
     return listOf(
       Choice(
-        "Java",
-        "Run the Google Code Scanner demo written in Java.",
-        Intent(this, com.google.mlkit.samples.codescanner.java.MainActivity::class.java)
-      ),
-      Choice(
         "Kotlin",
-        "Run the Google Code Scanner demo written in Kotlin.",
+        "далее.",
         Intent(this, com.google.mlkit.samples.codescanner.kotlin.MainActivity::class.java)
       )
     )

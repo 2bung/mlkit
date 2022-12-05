@@ -17,18 +17,19 @@
 package com.google.mlkit.samples.codescanner.kotlin
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.CheckBox
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import com.google.mlkit.common.MlKitException
 import com.google.mlkit.samples.codescanner.R
 import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
-import java.util.Locale
+import java.io.BufferedReader
+import java.io.DataOutputStream
+import java.io.InputStreamReader
+import java.net.URL
+import java.util.*
 
-/** Demonstrates the code scanner powered by Google Play Services. */
 class MainActivity : AppCompatActivity() {
 
   private var allowManualInput = false
@@ -44,21 +45,65 @@ class MainActivity : AppCompatActivity() {
     allowManualInput = (view as CheckBox).isChecked
   }
 
-  fun onScanButtonClicked(view: View) {
-    val optionsBuilder = GmsBarcodeScannerOptions.Builder()
-    if (allowManualInput) {
-      optionsBuilder.allowManualInput()
+  fun apiSender() {
+    val url = URL("https://api.tashir.solvintech.ru/api/scanner")
+    val postData = "foo1=bar1&foo2=bar2"
+
+    val conn = url.openConnection()
+    conn.doOutput = true
+    conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+    conn.setRequestProperty("Content-Length", postData.length.toString())
+
+    DataOutputStream(conn.getOutputStream()).use { it.writeBytes(postData) }
+    BufferedReader(InputStreamReader(conn.getInputStream())).use { bf ->
+      var line: String?
+      while (bf.readLine().also { line = it } != null) {
+        println(line)
+      }
     }
-    val gmsBarcodeScanner = GmsBarcodeScanning.getClient(this, optionsBuilder.build())
-    gmsBarcodeScanner
-      .startScan()
-      .addOnSuccessListener { barcode: Barcode ->
-        barcodeResultView!!.text = getSuccessfulMessage(barcode)
+  }
+
+
+  fun onScanButtonClicked(view: View) {
+    val thread = Thread {
+      try {
+        val url = URL("https://api.tashir.solvintech.ru/api/scanner")
+        val postData = "foo1=bar1&foo2=bar2"
+        val conn = url.openConnection()
+        conn.doOutput = true
+        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+        conn.setRequestProperty("Content-Length", postData.length.toString())
+        try {
+          DataOutputStream(conn.getOutputStream()).use { it.writeBytes(postData) }
+          BufferedReader(InputStreamReader(conn.getInputStream())).use { bf ->
+            var line: String?
+            while (bf.readLine().also { line = it } != null) {
+              println(line)
+            }
+          }
+        } catch (e: Exception) {
+          println(e)
+        }
+      } catch (e: java.lang.Exception) {
+        e.printStackTrace()
       }
-      .addOnFailureListener { e: Exception -> barcodeResultView!!.text = getErrorMessage(e) }
-      .addOnCanceledListener {
-        barcodeResultView!!.text = getString(R.string.error_scanner_cancelled)
-      }
+    }
+
+    thread.start()
+//    val optionsBuilder = GmsBarcodeScannerOptions.Builder()
+//    if (allowManualInput) {
+//      optionsBuilder.allowManualInput()
+//    }
+//    val gmsBarcodeScanner = GmsBarcodeScanning.getClient(this, optionsBuilder.build())
+//    gmsBarcodeScanner
+//      .startScan()
+//      .addOnSuccessListener { barcode: Barcode ->
+//        barcodeResultView!!.text = apiSender(barcode)
+//      }
+//      .addOnFailureListener { e: Exception -> barcodeResultView!!.text = getErrorMessage(e) }
+//      .addOnCanceledListener {
+//        barcodeResultView!!.text = getString(R.string.error_scanner_cancelled)
+//      }
   }
 
   override fun onSaveInstanceState(savedInstanceState: Bundle) {

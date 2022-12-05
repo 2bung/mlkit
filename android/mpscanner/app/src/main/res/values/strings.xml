@@ -1,0 +1,10 @@
+<resources>
+  <string name="app_name" translatable="false">BackendApiScanner </string>
+  <string name="allow_manual_input" translatable="false">тест</string>
+  <string name="scan_barcode_button" translatable="false">сканирование</string>
+  <string name="barcode_result" translatable="false">код найден.\n%1$s</string>
+  <string name="error_scanner_cancelled" translatable="false">код невереный.</string>
+  <string name="error_camera_permission_not_granted" translatable="false">Нет разрешения.</string>
+  <string name="error_app_name_unavailable" translatable="false">Название приложение не установлено.</string>
+  <string name="error_default_message" translatable="false">Ошибка сканнера: %1$s</string>
+</resources>
