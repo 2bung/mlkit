@@ -1,21 +1,5 @@
-/*
- * Copyright 2022 Google LLC. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.google.mlkit.samples.codescanner.kotlin
-
+import com.rabbitmq.client.*
 import android.os.Bundle
 import android.view.View
 import android.widget.CheckBox
@@ -29,6 +13,10 @@ import java.io.DataOutputStream
 import java.io.InputStreamReader
 import java.net.URL
 import java.util.*
+
+private const val USERNAME = "admin"
+private const val PASSWORD = "MaxLop2015"
+private const val QUEUE = "test"
 
 class MainActivity : AppCompatActivity() {
 
@@ -63,29 +51,92 @@ class MainActivity : AppCompatActivity() {
     }
   }
 
-
   fun onScanButtonClicked(view: View) {
     val thread = Thread {
       try {
-        val url = URL("https://api.tashir.solvintech.ru/api/scanner")
-        val postData = "foo1=bar1&foo2=bar2"
-        val conn = url.openConnection()
-        conn.doOutput = true
-        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
-        conn.setRequestProperty("Content-Length", postData.length.toString())
-        try {
-          DataOutputStream(conn.getOutputStream()).use { it.writeBytes(postData) }
-          BufferedReader(InputStreamReader(conn.getInputStream())).use { bf ->
-            var line: String?
-            while (bf.readLine().also { line = it } != null) {
-              println(line)
+        val factory = ConnectionFactory()
+          .apply {
+            username = "admin"
+            password = "MaxLop2015"
+            host = "62.113.111.16"
+            virtualHost = ConnectionFactory.DEFAULT_VHOST
+            port = ConnectionFactory.DEFAULT_AMQP_PORT
+          }
+
+        val channel = factory
+          .newConnection()
+          .createChannel()
+
+        channel.basicConsume(QUEUE, true, object : Consumer {
+          override fun handleConsumeOk(consumerTag: String?) {
+            consumerTag?.let {
+              val url = URL("https://api.tashir.solvintech.ru/api/scanner")
+              val postData = consumerTag
+
+              val conn = url.openConnection()
+              conn.doOutput = true
+              conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+              conn.setRequestProperty("Content-Length", postData.length.toString())
+
+              DataOutputStream(conn.getOutputStream()).use { it.writeBytes(postData) }
+              BufferedReader(InputStreamReader(conn.getInputStream())).use { bf ->
+                var line: String?
+                while (bf.readLine().also { line = it } != null) {
+                  println(line)
+                }
+              }
             }
           }
-        } catch (e: Exception) {
-          println(e)
-        }
-      } catch (e: java.lang.Exception) {
+
+          override fun handleCancelOk(consumerTag: String?) {
+            //Perform cancellation tasks such as closing resources here
+          }
+
+          override fun handleCancel(consumerTag: String?) {
+            //Perform cancellation tasks such as closing resources here
+          }
+
+          override fun handleShutdownSignal(consumerTag: String?, sig: ShutdownSignalException?) {
+            sig?.let {
+              throw it
+            }
+          }
+
+          override fun handleRecoverOk(consumerTag: String?) {
+            // If connection issues, try to receive messages again
+          }
+
+          override fun handleDelivery(
+            consumerTag: String?,
+            envelope: Envelope?,
+            properties: AMQP.BasicProperties?,
+            body: ByteArray?
+          ) {
+            body?.let {
+              val url = URL("https://api.tashir.solvintech.ru/api/scanner")
+              val postData = body.toString()
+
+              val conn = url.openConnection()
+              conn.doOutput = true
+              conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+              conn.setRequestProperty("Content-Length", postData.length.toString())
+
+              DataOutputStream(conn.getOutputStream()).use { it.writeBytes(postData) }
+              BufferedReader(InputStreamReader(conn.getInputStream())).use { bf ->
+                var line: String?
+                while (bf.readLine().also { line = it } != null) {
+                  println(line)
+                }
+              }
+            }
+          }
+
+        })
+        } catch (e: java.lang.Exception) {
         e.printStackTrace()
+      }
+      catch (e: java.lang.Exception) {
+        println(e)
       }
     }
 
